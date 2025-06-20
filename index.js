@@ -1,25 +1,13 @@
-require('dotenv').config();
-const scraper = require('./scraper');
-const patterns = require('./patterns');
-const telegram = require('./telegram');
+const TelegramBot = require('node-telegram-bot-api');
 
-let lastProcessed = [];
+// Pega o token da variável de ambiente no Railway
+const token = process.env.BOT_TOKEN;
 
-async function main() {
-  const history = await scraper();
-  const newEntries = history.filter(v => !lastProcessed.includes(v));
+// Cria o bot com polling (escutando comandos)
+const bot = new TelegramBot(token, { polling: true });
 
-  if (newEntries.length) {
-    lastProcessed = history.slice(0, 10);
-    const pattern = patterns.detect(history);
-
-    if (pattern) {
-      const message = telegram.formatMessage(pattern, history.slice(0,5));
-      await telegram.sendMessage(message);
-      console.log('Alerta enviado:', pattern);
-    }
-  }
-}
-
-setInterval(main, 5000);
-main(); 
+// Responde ao comando /start
+bot.onText(/\/start/, (msg) => {
+  const chatId = msg.chat.id;
+  bot.sendMessage(chatId, '🤖 Bot Aviator ativo!');
+});
